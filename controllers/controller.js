@@ -1,6 +1,6 @@
 
 const Client = require('../models/Client')
-const jwt_decode = require ('jwt-decode')
+const jwt_decode = require ('jwt-decode')   
 
 module.exports.clientRegister = async (req,res) =>{
     try{
@@ -29,6 +29,85 @@ module.exports.clientRegister = async (req,res) =>{
     }
 }
 
-module.exports.clientView = async (req, res) =>{
-    res.status(201).json({"msg":"Cliente registró correctamente"});  
+module.exports.client_view = async (req, res) =>{
+    try {
+        const client = await Client.find().exec()
+        if(!client.length) {
+            message = 'No existen registros';
+        }
+        return res.status(200).json({
+          client
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message:'Error en la consulta'
+        });
+    }
+}
+
+module.exports.client_view_id = async (req, res) =>{
+    try {
+        const client = await Client.findOne({"_id":req.params._id})
+        if(!client.length) {
+            message = 'No existen registros';
+        }
+        return res.status(200).json({
+          client
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message:'Error en la consulta'
+        });
+    }
+}
+
+
+module.exports.client_update = async(req, res)=>{
+    ud('update',req,res)
+}   
+
+module.exports.client_delete = async(req, res)=>{
+    ud('delete',req,res)
+} 
+
+const ud =  async(action,req,res)=>{
+    try{
+        const {id} = req.params
+        const body = req.body
+        actionClient = ''
+        
+        const client = await Client.findById(id);
+        if(!client) {
+            return res.json({
+                    success:false,
+                    message : 'No existen registros'        
+                    });
+        }
+        else{
+            if (action==='update'){
+                console.log('aaaaaaaaaaa')
+                actionClient = await Client.findByIdAndUpdate(id,body,{
+                    new:true,
+                    runValidator:true
+                });
+            }
+            else if (action === 'delete')
+            {
+                actionClient = await Client.findByIdAndDelete(id);
+            }
+            res.json(
+                {
+                    success:false,
+                    message:`Client ${action} successfully`,
+                    client: actionClient
+                }
+            )
+        }
+    }catch(e) {
+        return res.status(500).json({
+            message:'Error en la consulta'
+        });
+    }   
 }
